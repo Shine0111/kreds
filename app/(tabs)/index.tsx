@@ -32,7 +32,7 @@ export default function Index() {
             style={styles.flipButton}
             onPress={toggleCameraFacing}
           >
-            <Text style={styles.text}>Flip Camera</Text>
+            <Text style={styles.text}>Flip CAM</Text>
           </TouchableOpacity>
         </View>
       </CameraView>
