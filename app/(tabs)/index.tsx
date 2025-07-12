@@ -1,5 +1,6 @@
 import TextRecognition from "@react-native-ml-kit/text-recognition";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import * as Linking from "expo-linking";
 import { useRef, useState } from "react";
 import {
   Button,
@@ -45,6 +46,16 @@ export default function Index() {
 
     try {
       const result = await TextRecognition.recognize(photo.uri);
+
+      const code = result.blocks.find((block) =>
+        block.text.replace(/\s/g, "").match(/^\d{16}$/)
+      );
+      if (code) {
+        const codeTrimmed = code.text.replace(/\s+/g, "");
+        const dialCode = `#321*${codeTrimmed}# `;
+        console.log("Dialing code:", dialCode);
+        Linking.openURL(`tel:${dialCode}`);
+      }
       console.log("Text recognition result:", result);
     } catch (error) {
       console.error("Error during text recognition:", error);
