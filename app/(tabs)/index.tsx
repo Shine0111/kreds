@@ -1,9 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import TextRecognition from "@react-native-ml-kit/text-recognition";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { useRef, useState } from "react";
 import {
   Button,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -16,6 +19,8 @@ export default function Index() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
   const [photoUri, setPhotoUri] = useState<string>("");
+  const [dialCode, setDialCode] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
   if (!permission) {
@@ -43,6 +48,7 @@ export default function Index() {
     const photo = await cameraRef.current.takePictureAsync();
     setPhotoUri(photo.uri);
     setIsProcessing(true);
+    setModalVisible(true);
 
     try {
       const result = await TextRecognition.recognize(photo.uri);
@@ -52,9 +58,9 @@ export default function Index() {
       );
       if (code) {
         const codeTrimmed = code.text.replace(/\s+/g, "");
-        const dialCode = `#321*${codeTrimmed}# `;
-        console.log("Dialing code:", dialCode);
-        Linking.openURL(`tel:${dialCode}`);
+        setDialCode(`#321*${codeTrimmed}#`);
+        console.log("Dial code found:", codeTrimmed);
+        //Linking.openURL(`tel:${dialCode}`);
       }
       console.log("Text recognition result:", result);
     } catch (error) {
@@ -82,8 +88,44 @@ export default function Index() {
           onPress={takePicture}
           style={styles.captureButton}
         ></Pressable>
-        {isProcessing && <Text style={styles.text}>Processing...</Text>}
       </View>
+      <Modal
+        visible={modalVisible}
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContent}>
+            {isProcessing && <Text style={styles.text}>Processing...</Text>}
+            {!isProcessing && (
+              <>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <Text style={[styles.text, { fontSize: 20, marginRight: 8 }]}>
+                    {dialCode}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => Clipboard.setStringAsync(dialCode)}
+                  >
+                    <Ionicons name="copy-outline" size={24} color="#ffd33d" />
+                  </TouchableOpacity>
+                </View>
+                <Button title="Close" onPress={() => setModalVisible(false)} />
+                <View style={{ height: 12 }} />
+                <Button
+                  title="Open Dialer"
+                  onPress={() => Linking.openURL(`tel:`)}
+                />
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -94,6 +136,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#25292E",
     justifyContent: "center",
     alignItems: "center",
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    minWidth: 280,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   text: {
     color: "#fff",
