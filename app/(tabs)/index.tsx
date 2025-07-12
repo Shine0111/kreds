@@ -19,7 +19,7 @@ export default function Index() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
   const [photoUri, setPhotoUri] = useState<string>("");
-  const [dialCode, setDialCode] = useState<string>("");
+  const [dialCodes, setDialCodes] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
@@ -54,11 +54,15 @@ export default function Index() {
       const result = await TextRecognition.recognize(photo.uri);
 
       const code = result.blocks.find((block) =>
-        block.text.replace(/\s/g, "").match(/^\d{16}$/)
+        block.text.replace(/\s/g, "").match(/^\d{14}$/)
       );
       if (code) {
         const codeTrimmed = code.text.replace(/\s+/g, "");
-        setDialCode(`#321*${codeTrimmed}#`);
+        setDialCodes([
+          `#321*${codeTrimmed}#`,
+          `202${codeTrimmed}`,
+          `*888*${codeTrimmed}#`,
+        ]);
         console.log("Dial code found:", codeTrimmed);
         //Linking.openURL(`tel:${dialCode}`);
       }
@@ -101,19 +105,36 @@ export default function Index() {
               <>
                 <View
                   style={{
-                    flexDirection: "row",
+                    flexDirection: "column",
                     alignItems: "center",
                     marginBottom: 16,
                   }}
                 >
-                  <Text style={[styles.text, { fontSize: 20, marginRight: 8 }]}>
-                    {dialCode}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => Clipboard.setStringAsync(dialCode)}
-                  >
-                    <Ionicons name="copy-outline" size={24} color="#ffd33d" />
-                  </TouchableOpacity>
+                  {dialCodes.map((dialCode, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginVertical: 4,
+                      }}
+                    >
+                      <Text
+                        style={[styles.text, { fontSize: 20, marginRight: 8 }]}
+                      >
+                        {dialCode}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => Clipboard.setStringAsync(dialCode)}
+                      >
+                        <Ionicons
+                          name="copy-outline"
+                          size={24}
+                          color="#ffd33d"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
                 </View>
                 <Button title="Close" onPress={() => setModalVisible(false)} />
                 <View style={{ height: 12 }} />
