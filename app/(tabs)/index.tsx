@@ -75,6 +75,10 @@ export default function Index() {
           }
         } else if (operator === "orange") {
           setDialCode(`202${codeTrimmed}`);
+          if (await Clipboard.setStringAsync(`202${codeTrimmed}`)) {
+            setIsCopied(true);
+            setIsFlash(false);
+          }
           Linking.openURL(`tel:202${codeTrimmed}`);
         } else {
           setDialCode(`*888*${codeTrimmed}#`);
