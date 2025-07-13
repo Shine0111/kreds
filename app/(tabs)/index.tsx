@@ -6,8 +6,8 @@ import * as Linking from "expo-linking";
 import { useRef, useState } from "react";
 import {
   Button,
+  Image,
   Modal,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -92,26 +92,32 @@ export default function Index() {
         style={styles.camera}
         facing={facing}
       ></CameraView>
-      <View style={styles.buttonsContainer}>
-        <Pressable
-          onPress={() => takePicture("yas")}
-          style={styles.captureButton}
-        ></Pressable>
-        <Pressable
-          onPress={() => takePicture("orange")}
-          style={styles.captureButtonOrange}
-        ></Pressable>
-        <Pressable
-          onPress={() => takePicture("airtel")}
-          style={styles.captureButtonAirtel}
-        ></Pressable>
-      </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.flipButton}
           onPress={toggleCameraFacing}
         >
-          <Text style={styles.text}>Flip CAM</Text>
+          <Ionicons name="sync-circle-outline" size={32} color="white" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity onPress={() => takePicture("yas")}>
+          <Image
+            source={require("../../assets/images/yas.png")}
+            style={{ width: 50, height: 50 }}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => takePicture("orange")}>
+          <Image
+            source={require("../../assets/images/orange.png")}
+            style={{ width: 50, height: 50 }}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => takePicture("airtel")}>
+          <Image
+            source={require("../../assets/images/airtel.png")}
+            style={{ width: 50, height: 50, resizeMode: "contain" }}
+          />
         </TouchableOpacity>
       </View>
       <Modal
@@ -242,6 +248,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
+    marginBottom: 30,
   },
   captureButton: {
     backgroundColor: "yellow",
