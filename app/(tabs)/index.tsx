@@ -105,28 +105,33 @@ export default function Index() {
   return (
     <View style={styles.container}>
       {isFocus && (
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
-          facing={facing}
-          enableTorch={isFlash}
-        />
-      )}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.flipButton}
-          onPress={toggleCameraFacing}
-        >
-          <Ionicons name="sync-circle-outline" size={32} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setIsFlash(!isFlash)}>
-          <Ionicons
-            name={isFlash ? "flash" : "flash-off"}
-            size={32}
-            color="white"
+        <View style={styles.cameraContainer}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing={facing}
+            enableTorch={isFlash}
           />
-        </TouchableOpacity>
-      </View>
+          <View style={styles.cameraOverlay}>
+            <TouchableOpacity
+              style={styles.overlayButton}
+              onPress={toggleCameraFacing}
+            >
+              <Ionicons name="sync-circle-outline" size={32} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.overlayButton}
+              onPress={() => setIsFlash(!isFlash)}
+            >
+              <Ionicons
+                name={isFlash ? "flash" : "flash-off"}
+                size={32}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       <View style={styles.buttonsContainer}>
         <TouchableOpacity onPress={() => takePicture("yas")}>
           <Image
@@ -217,7 +222,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292E",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   modalBackground: {
@@ -246,22 +251,32 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     color: "#fff",
   },
+  cameraContainer: {
+    width: "90%",
+    height: "40%",
+    position: "relative",
+    backgroundColor: "#000",
+    borderRadius: 18,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
   camera: {
-    flex: 1,
     width: "100%",
     height: "100%",
-    justifyContent: "flex-end",
   },
-  flipButton: {
-    flex: 1,
-    alignSelf: "flex-end",
-    alignItems: "center",
-  },
-  buttonContainer: {
-    flex: 1,
+  cameraOverlay: {
+    position: "absolute",
+    bottom: 16,
+    right: 16,
     flexDirection: "row",
-    backgroundColor: "transparent",
-    margin: 64,
+    gap: 16,
+    zIndex: 2,
+  },
+  overlayButton: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    padding: 8,
+    marginLeft: 8,
   },
   message: {
     textAlign: "center",
@@ -272,7 +287,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: "40%",
   },
   captureButton: {
     backgroundColor: "yellow",
