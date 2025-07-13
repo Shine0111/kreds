@@ -158,57 +158,69 @@ export default function Index() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
-            {isProcessing && <Text style={styles.text}>Processing...</Text>}
-            {!isProcessing && (
+          <View style={styles.modalModernContent}>
+            {isProcessing ? (
+              <Text style={[styles.text, styles.processingText]}>
+                Processing...
+              </Text>
+            ) : (
               <>
-                <View
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "center",
-                    marginBottom: 16,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginVertical: 4,
-                    }}
-                  >
-                    <Text
-                      style={[styles.text, { fontSize: 20, marginRight: 8 }]}
-                    >
-                      {dialCode}
-                    </Text>
+                <View style={styles.dialCodeRow}>
+                  <Text style={styles.dialCodeText}>{dialCode}</Text>
+                  {dialCode && (
                     <TouchableOpacity
+                      style={styles.copyButton}
                       onPress={() => Clipboard.setStringAsync(dialCode)}
+                      accessibilityLabel="Copy dial code"
                     >
-                      <Ionicons name="copy-outline" size={24} color="#ffd33d" />
+                      <Ionicons name="copy-outline" size={24} color="#25292E" />
                     </TouchableOpacity>
-                  </View>
+                  )}
                 </View>
-                <View style={{ height: 12 }} />
                 {isCopied && (
-                  <>
-                    <Text style={styles.text}>
-                      Dial code copied to clipboard!
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        width: "100%",
-                        justifyContent: "space-evenly",
-                      }}
-                    >
-                      <Button title="Open Dialer" onPress={openDailer} />
-                      <Button
-                        title="OK"
-                        onPress={() => setModalVisible(false)}
-                      />
-                    </View>
-                  </>
+                  <Text style={dialCode ? styles.copiedText : styles.textError}>
+                    {!dialCode
+                      ? "No code was found"
+                      : "Dial code copied to clipboard!"}{" "}
+                  </Text>
                 )}
+                <View style={styles.modalButtonRow}>
+                  {dialCode && (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={openDailer}
+                      accessibilityLabel="Open Dialer"
+                    >
+                      <Ionicons
+                        name="call"
+                        size={20}
+                        color="#fff"
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text style={styles.actionButtonText}>Open Dialer</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    style={[styles.actionButton, { backgroundColor: "#eee" }]}
+                    onPress={() => {
+                      setModalVisible(false);
+                      setDialCode("");
+                    }}
+                    accessibilityLabel="OK"
+                  >
+                    <Ionicons
+                      name="checkmark"
+                      size={20}
+                      color="#25292E"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={[styles.actionButtonText, { color: "#25292E" }]}
+                    >
+                      OK
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
           </View>
@@ -231,17 +243,88 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  modalContent: {
+  modalModernContent: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 24,
+    paddingVertical: 36,
+    paddingHorizontal: 32,
     alignItems: "center",
-    minWidth: 280,
+    width: "90%",
+    marginLeft: "1.5%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 10,
+    position: "relative",
+  },
+  dialCodeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 18,
+    gap: 10,
+  },
+  dialCodeText: {
+    fontSize: 19,
+    fontWeight: "bold",
+    color: "#25292E",
+    textAlign: "center",
+    letterSpacing: 1.5,
+  },
+  copyButton: {
+    backgroundColor: "#ffd33d",
+    borderRadius: 8,
+    padding: 8,
+    marginLeft: 8,
+  },
+  copiedText: {
+    color: "#4caf50",
+    fontWeight: "600",
+    marginBottom: 10,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  textError: {
+    color: "#f44336",
+    fontWeight: "600",
+    marginBottom: 10,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    marginTop: 10,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#25292E",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    marginHorizontal: 4,
+    gap: 6,
+    marginTop: 8,
+    elevation: 2,
+    minWidth: 120,
+    justifyContent: "center",
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  processingText: {
+    fontSize: 16,
+    color: "#25292E",
+    fontWeight: "600",
+    marginVertical: 24,
+    textAlign: "center",
   },
   text: {
     color: "black",
@@ -254,6 +337,7 @@ const styles = StyleSheet.create({
   cameraContainer: {
     width: "90%",
     height: "40%",
+    marginLeft: "1.5%",
     position: "relative",
     backgroundColor: "#000",
     borderRadius: 18,
