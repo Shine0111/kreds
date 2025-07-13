@@ -8,23 +8,33 @@ import {
 
 export default function AboutScreen() {
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.appName}>Kreds</Text>
-        <Text style={styles.purpose}>Easily add your credits.</Text>
-        <View style={styles.divider} />
-        <Text style={styles.label}>Developed & maintained by</Text>
-        <Text style={styles.owner}>Shine Randriamialison</Text>
-        <View style={styles.divider} />
-        <Text style={styles.version}>Version 1.0.0</Text>
-        <TouchableOpacity
-          style={styles.emailButton}
-          onPress={() => Linking.openURL("mailto:ranshine9@gmail.com")}
-        >
-          <Text style={styles.emailText}>Contact: ranshine9@gmail.com</Text>
-        </TouchableOpacity>
+    <>
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.appName}>Kreds</Text>
+          <Text style={styles.purpose}>Easily add your credits.</Text>
+          <View style={styles.divider} />
+          <Text style={styles.label}>Developed & maintained by</Text>
+          <Text style={styles.owner}>Shine Randriamialison</Text>
+          <View style={styles.divider} />
+          <Text style={styles.version}>Version 1.0.0</Text>
+          <TouchableOpacity
+            style={styles.emailButton}
+            onPress={() => Linking.openURL("mailto:ranshine9@gmail.com")}
+          >
+            <Text style={styles.emailText}>Contact: ranshine9@gmail.com</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+      <View style={styles.copyrightContainer}>
+        <Text style={styles.label}>
+          © 2025 Shine Randriamialison. Tous droits réservés.{"\n"} La
+          reproduction, la distribution ou la modification non autorisée de
+          cette application ou de l’un de ses contenus est strictement
+          interdite.
+        </Text>
+      </View>
+    </>
   );
 }
 
@@ -95,5 +105,10 @@ const styles = StyleSheet.create({
     color: "#25292E",
     fontWeight: "bold",
     fontSize: 15,
+  },
+  copyrightContainer: {
+    backgroundColor: "#25292E",
+    padding: 16,
+    alignItems: "center",
   },
 });
