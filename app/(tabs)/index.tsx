@@ -19,7 +19,7 @@ export default function Index() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
   const [photoUri, setPhotoUri] = useState<string>("");
-  const [dialCodes, setDialCodes] = useState<string[]>([]);
+  const [dialCode, setDialCode] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
@@ -42,7 +42,7 @@ export default function Index() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   };
 
-  const takePicture = async () => {
+  const takePicture = async (operator: string) => {
     if (!cameraRef.current) return;
 
     const photo = await cameraRef.current.takePictureAsync();
@@ -58,11 +58,14 @@ export default function Index() {
       );
       if (code) {
         const codeTrimmed = code.text.replace(/\s+/g, "");
-        setDialCodes([
-          `#321*${codeTrimmed}#`,
-          `202${codeTrimmed}`,
-          `*888*${codeTrimmed}#`,
-        ]);
+        if (operator === "yas") {
+          setDialCode(`#321*${codeTrimmed}#`);
+        } else if (operator === "orange") {
+          setDialCode(`202${codeTrimmed}`);
+          Linking.openURL(`tel:202${codeTrimmed}`);
+        } else {
+          setDialCode(`*888*${codeTrimmed}#`);
+        }
         console.log("Dial code found:", codeTrimmed);
         //Linking.openURL(`tel:${dialCode}`);
       }
@@ -77,21 +80,32 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.flipButton}
-            onPress={toggleCameraFacing}
-          >
-            <Text style={styles.text}>Flip CAM</Text>
-          </TouchableOpacity>
-        </View>
-      </CameraView>
-      <View>
+      <CameraView
+        ref={cameraRef}
+        style={styles.camera}
+        facing={facing}
+      ></CameraView>
+      <View style={styles.buttonsContainer}>
         <Pressable
-          onPress={takePicture}
+          onPress={() => takePicture("yas")}
           style={styles.captureButton}
         ></Pressable>
+        <Pressable
+          onPress={() => takePicture("orange")}
+          style={styles.captureButtonOrange}
+        ></Pressable>
+        <Pressable
+          onPress={() => takePicture("airtel")}
+          style={styles.captureButtonAirtel}
+        ></Pressable>
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.flipButton}
+          onPress={toggleCameraFacing}
+        >
+          <Text style={styles.text}>Flip CAM</Text>
+        </TouchableOpacity>
       </View>
       <Modal
         visible={modalVisible}
@@ -110,31 +124,24 @@ export default function Index() {
                     marginBottom: 16,
                   }}
                 >
-                  {dialCodes.map((dialCode, index) => (
-                    <View
-                      key={index}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginVertical: 4,
-                      }}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginVertical: 4,
+                    }}
+                  >
+                    <Text
+                      style={[styles.text, { fontSize: 20, marginRight: 8 }]}
                     >
-                      <Text
-                        style={[styles.text, { fontSize: 20, marginRight: 8 }]}
-                      >
-                        {dialCode}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => Clipboard.setStringAsync(dialCode)}
-                      >
-                        <Ionicons
-                          name="copy-outline"
-                          size={24}
-                          color="#ffd33d"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
+                      {dialCode}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => Clipboard.setStringAsync(dialCode)}
+                    >
+                      <Ionicons name="copy-outline" size={24} color="#ffd33d" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <Button title="Close" onPress={() => setModalVisible(false)} />
                 <View style={{ height: 12 }} />
@@ -205,8 +212,30 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingBottom: 10,
   },
+  buttonsContainer: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+  },
   captureButton: {
     backgroundColor: "white",
+    width: 75,
+    height: 75,
+    borderRadius: "50%",
+    borderWidth: 5,
+    borderColor: "#595a59",
+  },
+  captureButtonOrange: {
+    backgroundColor: "orange",
+    width: 75,
+    height: 75,
+    borderRadius: "50%",
+    borderWidth: 5,
+    borderColor: "#595a59",
+  },
+  captureButtonAirtel: {
+    backgroundColor: "red",
     width: 75,
     height: 75,
     borderRadius: "50%",
