@@ -21,6 +21,7 @@ export default function Index() {
   const [photoUri, setPhotoUri] = useState<string>("");
   const [dialCode, setDialCode] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
   if (!permission) {
@@ -60,11 +61,17 @@ export default function Index() {
         const codeTrimmed = code.text.replace(/\s+/g, "");
         if (operator === "yas") {
           setDialCode(`#321*${codeTrimmed}#`);
+          if (await Clipboard.setStringAsync(`#321*${codeTrimmed}#`)) {
+            setIsCopied(true);
+          }
         } else if (operator === "orange") {
           setDialCode(`202${codeTrimmed}`);
           Linking.openURL(`tel:202${codeTrimmed}`);
         } else {
           setDialCode(`*888*${codeTrimmed}#`);
+          if (await Clipboard.setStringAsync(`*888*${codeTrimmed}#`)) {
+            setIsCopied(true);
+          }
         }
         console.log("Dial code found:", codeTrimmed);
         //Linking.openURL(`tel:${dialCode}`);
@@ -143,12 +150,30 @@ export default function Index() {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Button title="Close" onPress={() => setModalVisible(false)} />
                 <View style={{ height: 12 }} />
-                <Button
-                  title="Open Dialer"
-                  onPress={() => Linking.openURL(`tel:`)}
-                />
+                {isCopied && (
+                  <>
+                    <Text style={styles.text}>
+                      Dial code copied to clipboard!
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        width: "100%",
+                        justifyContent: "space-evenly",
+                      }}
+                    >
+                      <Button
+                        title="Open Dialer"
+                        onPress={() => Linking.openURL(`tel:`)}
+                      />
+                      <Button
+                        title="OK"
+                        onPress={() => setModalVisible(false)}
+                      />
+                    </View>
+                  </>
+                )}
               </>
             )}
           </View>
@@ -184,7 +209,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   text: {
-    color: "#fff",
+    color: "black",
   },
   button: {
     fontSize: 20,
@@ -219,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   captureButton: {
-    backgroundColor: "white",
+    backgroundColor: "yellow",
     width: 75,
     height: 75,
     borderRadius: "50%",
