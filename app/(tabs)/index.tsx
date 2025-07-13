@@ -3,6 +3,7 @@ import TextRecognition from "@react-native-ml-kit/text-recognition";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
+import { useFocusEffect } from "expo-router";
 import { useRef, useState } from "react";
 import {
   Button,
@@ -21,8 +22,16 @@ export default function Index() {
   const [photoUri, setPhotoUri] = useState<string>("");
   const [dialCode, setDialCode] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [isFlash, setIsFlash] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isFocus, setIsFocus] = useState(false);
   const cameraRef = useRef<CameraView>(null);
+  useFocusEffect(() => {
+    setIsFocus(true);
+    return () => {
+      setIsFocus(false);
+    };
+  });
 
   if (!permission) {
     return <View />;
@@ -85,19 +94,33 @@ export default function Index() {
     }
   };
 
+  const openDailer = () => {
+    setIsFlash(false);
+    Linking.openURL(`tel:`);
+  };
   return (
     <View style={styles.container}>
-      <CameraView
-        ref={cameraRef}
-        style={styles.camera}
-        facing={facing}
-      ></CameraView>
+      {isFocus && (
+        <CameraView
+          ref={cameraRef}
+          style={styles.camera}
+          facing={facing}
+          enableTorch={isFlash}
+        />
+      )}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.flipButton}
           onPress={toggleCameraFacing}
         >
           <Ionicons name="sync-circle-outline" size={32} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setIsFlash(!isFlash)}>
+          <Ionicons
+            name={isFlash ? "flash" : "flash-off"}
+            size={32}
+            color="white"
+          />
         </TouchableOpacity>
       </View>
       <View style={styles.buttonsContainer}>
@@ -169,10 +192,7 @@ export default function Index() {
                         justifyContent: "space-evenly",
                       }}
                     >
-                      <Button
-                        title="Open Dialer"
-                        onPress={() => Linking.openURL(`tel:`)}
-                      />
+                      <Button title="Open Dialer" onPress={openDailer} />
                       <Button
                         title="OK"
                         onPress={() => setModalVisible(false)}
