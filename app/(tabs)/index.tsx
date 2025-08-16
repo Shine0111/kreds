@@ -6,6 +6,7 @@ import * as Linking from "expo-linking";
 import { useFocusEffect } from "expo-router";
 import { useRef, useState } from "react";
 import {
+  Alert,
   Button,
   Image,
   Modal,
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { dialUSSD } from "../utils/ussdService";
 
 export default function Index() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -52,6 +54,10 @@ export default function Index() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   };
 
+  const dial = async (code: string) => {
+    const response = await dialUSSD(code);
+    Alert.alert(response.success ? "Success" : "Error", response.message);
+  };
   const takePicture = async (operator: string) => {
     if (!cameraRef.current) return;
 
@@ -69,7 +75,8 @@ export default function Index() {
       if (code) {
         const codeTrimmed = code.text.replace(/\s+/g, "");
         if (operator === "yas") {
-          setDialCode(`#321*${codeTrimmed}#`);
+          //setDialCode(`#321*${codeTrimmed}#`);
+          dial(`#321*${codeTrimmed}#`);
           if (await Clipboard.setStringAsync(`#321*${codeTrimmed}#`)) {
             setIsCopied(true);
           }
