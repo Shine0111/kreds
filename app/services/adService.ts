@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  onSnapshot,
   query,
   where,
 } from "firebase/firestore";
@@ -33,6 +34,46 @@ interface AdCacheMetadata {
   version: number;
   timestamp: number;
   filePath: string;
+}
+
+// Export db and storage for use in components
+export { db, storage };
+
+// New: listen to an ad in real-time
+
+export function listenToAd(adKey: string, callback: (ad: Ad | null) => void) {
+  if (!db) return () => {};
+
+  const docRef = doc(db, "ads", adKey);
+  const unsubscribe = onSnapshot(docRef, async (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data.active) {
+        const ad: Ad = {
+          id: docSnap.id,
+          type: data.type,
+          url: data.url,
+          link: data.link,
+          active: data.active,
+          version: data.version,
+        };
+
+        // download/cache the ad
+        const result = await downloadAndCacheAd(ad);
+        if (result.success) {
+          ad.cachePath = result.cachePath;
+        }
+
+        callback(ad);
+      } else {
+        callback(null);
+      }
+    } else {
+      callback(null);
+    }
+  });
+
+  return unsubscribe;
 }
 
 // Firebase initialization

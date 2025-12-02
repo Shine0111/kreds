@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
-import { Ad, fetchActiveAd } from "../services/adService";
+import { Ad, fetchActiveAd, listenToAd } from "../services/adService";
 
 export function AdvertisementSection() {
   const [ad, setAd] = useState<Ad | null>(null);
@@ -17,7 +17,15 @@ export function AdvertisementSection() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadAd();
+    setLoading(true);
+
+    const unsubscribe = listenToAd("home_banner", (ad) => {
+      setAd(ad);
+      setLoading(false);
+      setError(ad ? null : "Ad not found");
+    });
+
+    return () => unsubscribe(); // cleanup listener on unmount
   }, []);
 
   const loadAd = async () => {
