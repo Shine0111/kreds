@@ -14,9 +14,8 @@ import { firebaseConfig } from "../config/firebase";
 
 // Cache paths - simplified to work with available APIs
 // Files will be cached in the app's document directory
-const CACHE_DIR = "/data/data/com.anachtori.kreds/cache/kreds-ads/";
-const METADATA_FILE =
-  "/data/data/com.anachtori.kreds/cache/kreds-ads-meta.json";
+const CACHE_DIR = FileSystem.cacheDirectory + "kreds-ads/";
+const METADATA_FILE = FileSystem.cacheDirectory + "kreds-ads-meta.json";
 
 // Ad types
 export interface Ad {
@@ -53,12 +52,12 @@ try {
  */
 async function initializeCacheDir() {
   try {
-    const cacheInfo = await FileSystem.getInfoAsync(CACHE_DIR);
-    if (!cacheInfo.exists) {
-      await FileSystem.makeDirectoryAsync(CACHE_DIR, { intermediates: true });
-    }
+    await FileSystem.makeDirectoryAsync(CACHE_DIR, { intermediates: true });
   } catch (error) {
-    console.error("Error initializing cache directory:", error);
+    // Ignore "directory already exists"
+    if (!String(error).includes("EEXIST")) {
+      console.error("Error initializing cache directory:", error);
+    }
   }
 }
 
@@ -114,10 +113,18 @@ async function downloadAndCacheAd(
     }
 
     // Download file from Firebase Storage
+    // if (!ad.url.startsWith("gs://")) {
+    //   return {
+    //     success: false,
+    //     error: "Invalid Firebase Storage URL",
+    //   };
+    // }
+
+    // Allow external URLs without caching
     if (!ad.url.startsWith("gs://")) {
       return {
-        success: false,
-        error: "Invalid Firebase Storage URL",
+        success: true,
+        cachePath: ad.url, // Just return the remote link
       };
     }
 

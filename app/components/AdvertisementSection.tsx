@@ -19,6 +19,7 @@ export function AdvertisementSection() {
       // Fetch the home_banner ad (you can make this dynamic later)
       const fetchedAd = await fetchActiveAd("home_banner");
       setAd(fetchedAd);
+      console.log("Fetched ad:", fetchedAd);
     } catch (err) {
       console.error("Error loading ad:", err);
       setError("Failed to load advertisement");
@@ -55,8 +56,14 @@ export function AdvertisementSection() {
   if (ad.type === "image" || ad.type === "gif") {
     return (
       <View style={styles.adContainer}>
-        <Image
+        {/*Use when Firebase storage caching issue is resolved*/}
+        {/* <Image
           source={{ uri: `file://${ad.cachePath}` }}
+          style={styles.adImage}
+          resizeMode="contain"
+        /> */}
+        <Image
+          source={{ uri: ad.url }}
           style={styles.adImage}
           resizeMode="contain"
         />
@@ -87,6 +94,7 @@ const styles = StyleSheet.create({
   adContainer: {
     width: "90%",
     minHeight: 120,
+    maxHeight: 200,
     backgroundColor: "#f5f5f5",
     borderRadius: 12,
     alignItems: "center",
