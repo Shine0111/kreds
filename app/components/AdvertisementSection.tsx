@@ -1,11 +1,84 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import { WebView } from "react-native-webview";
+import { Ad, fetchActiveAd } from "../services/adService";
 
 export function AdvertisementSection() {
-  // You can replace this with an actual ad component or logic later
+  const [ad, setAd] = useState<Ad | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAd();
+  }, []);
+
+  const loadAd = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Fetch the home_banner ad (you can make this dynamic later)
+      const fetchedAd = await fetchActiveAd("home_banner");
+      setAd(fetchedAd);
+    } catch (err) {
+      console.error("Error loading ad:", err);
+      setError("Failed to load advertisement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.adContainer}>
+        <ActivityIndicator size="large" color="#25292E" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.adContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!ad || !ad.cachePath) {
+    return (
+      <View style={styles.adContainer}>
+        <Text style={styles.adText}>No Advertisement Available</Text>
+      </View>
+    );
+  }
+
+  // Render based on ad type
+  if (ad.type === "image" || ad.type === "gif") {
+    return (
+      <View style={styles.adContainer}>
+        <Image
+          source={{ uri: `file://${ad.cachePath}` }}
+          style={styles.adImage}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
+
+  if (ad.type === "video") {
+    return (
+      <View style={styles.adContainer}>
+        <WebView
+          source={{ uri: `file://${ad.cachePath}` }}
+          style={styles.adVideo}
+          allowsFullscreenVideo
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.adContainer}>
       <Text style={styles.adText}>Advertisement</Text>
-      {/* Place your ad banner or component here */}
     </View>
   );
 }
@@ -13,7 +86,7 @@ export function AdvertisementSection() {
 const styles = StyleSheet.create({
   adContainer: {
     width: "90%",
-    minHeight: 200,
+    minHeight: 120,
     backgroundColor: "#f5f5f5",
     borderRadius: 12,
     alignItems: "center",
@@ -24,11 +97,25 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 0,
+    elevation: 2,
+    overflow: "hidden",
+  },
+  adImage: {
+    width: "100%",
+    height: "100%",
+  },
+  adVideo: {
+    width: "100%",
+    height: "100%",
   },
   adText: {
     color: "#888",
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  errorText: {
+    color: "#f44336",
+    fontSize: 14,
     fontWeight: "bold",
   },
 });
