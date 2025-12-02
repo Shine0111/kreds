@@ -71,6 +71,7 @@ export default function Index() {
           Alert.alert("Error", result.message || "Failed to process code");
         }
       } else {
+        setModalVisible(false);
         Alert.alert(
           "No Code Found",
           "Could not find a valid 14-digit code in the image."

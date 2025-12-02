@@ -24,6 +24,7 @@ export interface Ad {
   url: string;
   active: boolean;
   version: number;
+  link: string;
   cachePath?: string;
 }
 
@@ -188,6 +189,7 @@ export async function fetchActiveAd(adKey: string): Promise<Ad | null> {
           id: docSnap.id,
           type: data.type,
           url: data.url,
+          link: data.link,
           active: data.active,
           version: data.version,
         };
@@ -228,6 +230,7 @@ export async function fetchAllActiveAds(): Promise<Ad[]> {
         id: docSnap.id,
         type: data.type,
         url: data.url,
+        link: data.link,
         active: data.active,
         version: data.version,
       };

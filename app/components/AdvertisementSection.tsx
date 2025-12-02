@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { WebView } from "react-native-webview";
 import { Ad, fetchActiveAd } from "../services/adService";
 
@@ -52,10 +60,17 @@ export function AdvertisementSection() {
     );
   }
 
+  const handleAdPress = () => {
+    if (ad.link) {
+      Linking.openURL(ad.link).catch((err) =>
+        console.error("Failed to open URL:", err)
+      );
+    }
+  };
   // Render based on ad type
   if (ad.type === "image" || ad.type === "gif") {
     return (
-      <View style={styles.adContainer}>
+      <Pressable style={styles.adContainer} onPress={handleAdPress}>
         {/*Use when Firebase storage caching issue is resolved*/}
         {/* <Image
           source={{ uri: `file://${ad.cachePath}` }}
@@ -67,7 +82,7 @@ export function AdvertisementSection() {
           style={styles.adImage}
           resizeMode="contain"
         />
-      </View>
+      </Pressable>
     );
   }
 
@@ -111,6 +126,7 @@ const styles = StyleSheet.create({
   adImage: {
     width: "100%",
     height: "100%",
+    objectFit: "cover",
   },
   adVideo: {
     width: "100%",
