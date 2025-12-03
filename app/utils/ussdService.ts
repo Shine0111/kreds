@@ -67,7 +67,7 @@ export async function dialUSSD(code: string): Promise<UssdResponse> {
     }
 
     // Use tel: scheme to open the dialer with the code
-    await Linking.openURL(`tel:${code}`);
+    await Linking.openURL(`tel:${encodeURIComponent(code)}`);
     return { success: true, message: "Dialer opened with code." };
   } catch (error) {
     return {
