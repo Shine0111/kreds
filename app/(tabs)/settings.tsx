@@ -24,45 +24,51 @@ const APP_INFO = {
 interface SettingsItemProps {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
+  isExpanded: boolean;
   onPress: () => void;
-  showChevron?: boolean;
+  children?: React.ReactNode;
 }
 
 function SettingsItem({
   icon,
   title,
+  isExpanded,
   onPress,
-  showChevron = true,
+  children,
 }: SettingsItemProps) {
+  const iconName = isExpanded
+    ? (icon.replace("-outline", "-sharp") as keyof typeof Ionicons.glyphMap)
+    : icon;
+  const chevronIcon = isExpanded ? "chevron-down" : "chevron-forward";
+
   return (
-    <TouchableOpacity
-      style={styles.settingsItem}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-    >
-      <View style={styles.settingsItemLeft}>
-        <Ionicons name={icon} size={24} color="#25292E" />
-        <Text style={styles.settingsItemText}>{title}</Text>
-      </View>
-      {showChevron && (
-        <Ionicons name="chevron-forward" size={20} color="#888" />
+    <View>
+      <TouchableOpacity
+        style={styles.settingsItem}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ expanded: isExpanded }}
+      >
+        <View style={styles.settingsItemLeft}>
+          <Ionicons name={iconName} size={24} color="#25292E" />
+          <Text style={styles.settingsItemText}>{title}</Text>
+        </View>
+        <Ionicons name={chevronIcon} size={20} color="#888" />
+      </TouchableOpacity>
+
+      {isExpanded && children && (
+        <View style={styles.expandedContent}>{children}</View>
       )}
-    </TouchableOpacity>
+    </View>
   );
 }
 
 export default function SettingsScreen() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
-  const handleThemePress = () => {
-    // TODO: Implement theme switching
-    Alert.alert("Theme", "Theme settings coming soon!");
-  };
-
-  const handleExtraFeaturesPress = () => {
-    // TODO: Navigate to extra features screen
-    Alert.alert("Extra Features", "Extra features coming soon!");
+  const toggleItem = (itemName: string) => {
+    setExpandedItem(expandedItem === itemName ? null : itemName);
   };
 
   const handleContactPress = async () => {
@@ -105,24 +111,70 @@ export default function SettingsScreen() {
           <SettingsItem
             icon="color-palette-outline"
             title="Theme"
-            onPress={handleThemePress}
-          />
+            isExpanded={expandedItem === "theme"}
+            onPress={() => toggleItem("theme")}
+          >
+            <Text style={styles.contentText}>
+              Choose your preferred theme for the app.
+            </Text>
+            <TouchableOpacity style={styles.optionButton}>
+              <Text style={styles.optionButtonText}>Light Mode</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionButton}>
+              <Text style={styles.optionButtonText}>Dark Mode</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionButton}>
+              <Text style={styles.optionButtonText}>System Default</Text>
+            </TouchableOpacity>
+          </SettingsItem>
 
           <View style={styles.divider} />
 
           <SettingsItem
             icon="sparkles-outline"
             title="Extra Features"
-            onPress={handleExtraFeaturesPress}
-          />
+            isExpanded={expandedItem === "features"}
+            onPress={() => toggleItem("features")}
+          >
+            <Text style={styles.contentText}>
+              Unlock additional features and functionality.
+            </Text>
+            <TouchableOpacity style={styles.optionButton}>
+              <Text style={styles.optionButtonText}>Auto-detect operator</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionButton}>
+              <Text style={styles.optionButtonText}>Save scan history</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionButton}>
+              <Text style={styles.optionButtonText}>
+                Quick access shortcuts
+              </Text>
+            </TouchableOpacity>
+          </SettingsItem>
 
           <View style={styles.divider} />
 
           <SettingsItem
             icon="mail-outline"
             title="Contact Us"
-            onPress={handleContactPress}
-          />
+            isExpanded={expandedItem === "contact"}
+            onPress={() => toggleItem("contact")}
+          >
+            <Text style={styles.contentText}>
+              Get in touch with us for support or feedback.
+            </Text>
+            <TouchableOpacity
+              style={styles.contactButton}
+              onPress={handleContactPress}
+            >
+              <Ionicons name="mail" size={20} color="#25292E" />
+              <Text style={styles.contactButtonText}>{APP_INFO.email}</Text>
+            </TouchableOpacity>
+            <View style={styles.developerInfo}>
+              <Text style={styles.developerLabel}>Developed by</Text>
+              <Text style={styles.developerName}>{APP_INFO.developer}</Text>
+            </View>
+          </SettingsItem>
         </View>
 
         {/* Version & Copyright */}
@@ -194,6 +246,64 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "500",
     color: "#25292E",
+  },
+  expandedContent: {
+    backgroundColor: "#f8f8f8",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginHorizontal: 8,
+    marginBottom: 8,
+    borderRadius: 12,
+  },
+  contentText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  optionButton: {
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  optionButtonText: {
+    fontSize: 15,
+    color: "#25292E",
+    fontWeight: "500",
+  },
+  contactButton: {
+    backgroundColor: "#ffd33d",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    gap: 8,
+  },
+  contactButtonText: {
+    fontSize: 15,
+    color: "#25292E",
+    fontWeight: "bold",
+  },
+  developerInfo: {
+    alignItems: "center",
+    paddingTop: 8,
+  },
+  developerLabel: {
+    fontSize: 12,
+    color: "#888",
+    marginBottom: 4,
+  },
+  developerName: {
+    fontSize: 15,
+    color: "#25292E",
+    fontWeight: "600",
   },
   divider: {
     height: 1,
