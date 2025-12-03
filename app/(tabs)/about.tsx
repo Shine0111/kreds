@@ -17,7 +17,7 @@ export default function AboutScreen() {
           <Text style={styles.label}>Developed & maintained by</Text>
           <Text style={styles.owner}>Shine Randriamialison</Text>
           <View style={styles.divider} />
-          <Text style={styles.version}>Version 1.0.0</Text>
+          <Text style={styles.version}>Version 1.0.5</Text>
           <TouchableOpacity
             style={styles.emailButton}
             onPress={() => Linking.openURL("mailto:ranshine9@gmail.com")}
