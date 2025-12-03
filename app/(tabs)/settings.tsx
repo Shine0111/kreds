@@ -1,40 +1,140 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
+  Alert,
   Linking,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-export default function SettingsScreen() {
+// App constants
+const APP_INFO = {
+  name: "Kreds",
+  version: "1.0.5",
+  developer: "Shine Randriamialison",
+  email: "ranshine9@gmail.com",
+  copyright: "© 2025 Shine Randriamialison. Tous droits réservés.",
+  copyrightDetails:
+    "La reproduction, la distribution ou la modification non autorisée de cette application ou de l'un de ses contenus est strictement interdite.",
+};
+
+interface SettingsItemProps {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  onPress: () => void;
+  showChevron?: boolean;
+}
+
+function SettingsItem({
+  icon,
+  title,
+  onPress,
+  showChevron = true,
+}: SettingsItemProps) {
   return (
-    <>
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.appName}>Kreds</Text>
-          <Text style={styles.purpose}>Easily add your credits.</Text>
-          <View style={styles.divider} />
-          <Text style={styles.label}>Developed & maintained by</Text>
-          <Text style={styles.owner}>Shine Randriamialison</Text>
-          <View style={styles.divider} />
-          <Text style={styles.version}>Version 1.0.5</Text>
-          <TouchableOpacity
-            style={styles.emailButton}
-            onPress={() => Linking.openURL("mailto:ranshine9@gmail.com")}
-          >
-            <Text style={styles.emailText}>Contact: ranshine9@gmail.com</Text>
-          </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.settingsItem}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
+      <View style={styles.settingsItemLeft}>
+        <Ionicons name={icon} size={24} color="#25292E" />
+        <Text style={styles.settingsItemText}>{title}</Text>
+      </View>
+      {showChevron && (
+        <Ionicons name="chevron-forward" size={20} color="#888" />
+      )}
+    </TouchableOpacity>
+  );
+}
+
+export default function SettingsScreen() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  const handleThemePress = () => {
+    // TODO: Implement theme switching
+    Alert.alert("Theme", "Theme settings coming soon!");
+  };
+
+  const handleExtraFeaturesPress = () => {
+    // TODO: Navigate to extra features screen
+    Alert.alert("Extra Features", "Extra features coming soon!");
+  };
+
+  const handleContactPress = async () => {
+    try {
+      const url = `mailto:${APP_INFO.email}`;
+      const supported = await Linking.canOpenURL(url);
+
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert(
+          "Error",
+          "Cannot open email client. Please contact us at: " + APP_INFO.email
+        );
+      }
+    } catch (error) {
+      console.error("Error opening email:", error);
+      Alert.alert(
+        "Error",
+        "Failed to open email client. Please try again later."
+      );
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* App Header */}
+        <View style={styles.header}>
+          <Text style={styles.appName}>{APP_INFO.name}</Text>
+          <Text style={styles.headerSubtitle}>Settings</Text>
         </View>
-      </View>
-      <View style={styles.copyrightContainer}>
-        <Text style={styles.label}>
-          © 2025 Shine Randriamialison. Tous droits réservés.{"\n"} La
-          reproduction, la distribution ou la modification non autorisée de
-          cette application ou de l’un de ses contenus est strictement
-          interdite.
-        </Text>
-      </View>
-    </>
+
+        {/* Settings Card */}
+        <View style={styles.card}>
+          <SettingsItem
+            icon="color-palette-outline"
+            title="Theme"
+            onPress={handleThemePress}
+          />
+
+          <View style={styles.divider} />
+
+          <SettingsItem
+            icon="sparkles-outline"
+            title="Extra Features"
+            onPress={handleExtraFeaturesPress}
+          />
+
+          <View style={styles.divider} />
+
+          <SettingsItem
+            icon="mail-outline"
+            title="Contact Us"
+            onPress={handleContactPress}
+          />
+        </View>
+
+        {/* Version & Copyright */}
+        <View style={styles.footerInfo}>
+          <Text style={styles.versionText}>Version {APP_INFO.version}</Text>
+          <Text style={styles.copyrightText}>{APP_INFO.copyright}</Text>
+          <Text style={styles.copyrightDetails}>
+            {APP_INFO.copyrightDetails}
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -42,73 +142,88 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292E",
-    justifyContent: "center",
-    alignItems: "center",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 24,
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 32,
+    marginTop: 16,
+  },
+  appName: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#ffd33d",
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: "#fff",
+    opacity: 0.8,
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 28,
-    alignItems: "center",
+    borderRadius: 16,
+    padding: 8,
     width: "100%",
-    maxWidth: 350,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 6,
   },
-  appName: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#25292E",
-    marginBottom: 6,
-    letterSpacing: 1,
+  settingsItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
   },
-  purpose: {
-    fontSize: 16,
-    color: "#555",
-    marginBottom: 18,
-    textAlign: "center",
+  settingsItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  settingsItemText: {
+    fontSize: 17,
+    fontWeight: "500",
+    color: "#25292E",
   },
   divider: {
-    width: "80%",
     height: 1,
     backgroundColor: "#eee",
-    marginVertical: 14,
+    marginHorizontal: 16,
   },
-  label: {
-    fontSize: 13,
-    color: "#888",
-    marginBottom: 2,
-  },
-  owner: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#25292E",
-    marginBottom: 2,
-  },
-  version: {
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 18,
-  },
-  emailButton: {
-    backgroundColor: "#ffd33d",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    marginTop: 6,
-  },
-  emailText: {
-    color: "#25292E",
-    fontWeight: "bold",
-    fontSize: 15,
-  },
-  copyrightContainer: {
-    backgroundColor: "#25292E",
-    padding: 16,
+  footerInfo: {
     alignItems: "center",
+    marginTop: 32,
+    paddingHorizontal: 16,
+  },
+  versionText: {
+    fontSize: 14,
+    color: "#fff",
+    opacity: 0.7,
+    marginBottom: 16,
+  },
+  copyrightText: {
+    fontSize: 12,
+    color: "#fff",
+    opacity: 0.6,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  copyrightDetails: {
+    fontSize: 11,
+    color: "#fff",
+    opacity: 0.5,
+    textAlign: "center",
+    lineHeight: 16,
+    paddingHorizontal: 8,
   },
 });
