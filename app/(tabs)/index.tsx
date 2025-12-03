@@ -1,5 +1,4 @@
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
-import * as Linking from "expo-linking";
 import { useFocusEffect } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
@@ -10,7 +9,7 @@ import { OperatorButtons } from "../components/OperatorButtons";
 import { ResultModal } from "../components/ResultModal";
 import { extractUSSDCodeFromImage } from "../utils/codeRecognition";
 import { OperatorType, processUSSDCode } from "../utils/operatorConfig";
-import { requestCallPermission } from "../utils/ussdService";
+import { dialUSSD, requestCallPermission } from "../utils/ussdService";
 
 export default function Index() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -57,7 +56,7 @@ export default function Index() {
 
   const handleOpenDialer = () => {
     setIsFlash(false);
-    Linking.openURL("tel:");
+    dialUSSD(dialCode);
   };
 
   const handleCloseModal = () => {
