@@ -80,13 +80,8 @@ export function AdvertisementSection() {
     return (
       <Pressable style={styles.adContainer} onPress={handleAdPress}>
         {/*Use when Firebase storage caching issue is resolved*/}
-        {/* <Image
-          source={{ uri: `file://${ad.cachePath}` }}
-          style={styles.adImage}
-          resizeMode="contain"
-        /> */}
         <Image
-          source={{ uri: ad.url }}
+          source={{ uri: `file://${ad.cachePath}` }}
           style={styles.adImage}
           resizeMode="contain"
         />

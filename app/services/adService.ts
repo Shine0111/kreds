@@ -134,7 +134,7 @@ async function saveCacheMetadata(metadata: Record<string, AdCacheMetadata>) {
 }
 
 /**
- * Download and cache ad file
+ * Download and cache ad file (supports both Firebase Storage and external URLs)
  */
 async function downloadAndCacheAd(
   ad: Ad
@@ -154,41 +154,48 @@ async function downloadAndCacheAd(
       }
     }
 
-    // Download file from Firebase Storage
-    // if (!ad.url.startsWith("gs://")) {
-    //   return {
-    //     success: false,
-    //     error: "Invalid Firebase Storage URL",
-    //   };
-    // }
-
-    // Allow external URLs without caching
-    if (!ad.url.startsWith("gs://")) {
-      return {
-        success: true,
-        cachePath: ad.url, // Just return the remote link
-      };
-    }
-
-    // Parse gs:// URL to get bucket and path
-    const gsUrl = ad.url;
-    const bucketPath = gsUrl.replace("gs://", "").split("/");
-    const storagePath = bucketPath.slice(1).join("/");
-
-    const storageRef = ref(storage, storagePath);
-    const fileBytes = await getBytes(storageRef);
-
     // Determine file extension from URL
-    const extension = ad.url.split(".").pop()?.split("?")[0] || "bin";
+    const urlParts = ad.url.split("?")[0].split(".");
+    const extension = urlParts[urlParts.length - 1] || "bin";
     const fileName = `${ad.id}_v${ad.version}.${extension}`;
     const cachePath = `${CACHE_DIR}${fileName}`;
 
-    // Save file to cache
-    await FileSystem.writeAsStringAsync(
-      cachePath,
-      Buffer.from(fileBytes).toString("base64"),
-      { encoding: "base64" }
-    );
+    // Handle Firebase Storage URLs
+    if (ad.url.startsWith("gs://")) {
+      // Parse gs:// URL to get bucket and path
+      const gsUrl = ad.url;
+      const bucketPath = gsUrl.replace("gs://", "").split("/");
+      const storagePath = bucketPath.slice(1).join("/");
+
+      const storageRef = ref(storage, storagePath);
+      const fileBytes = await getBytes(storageRef);
+
+      // Save file to cache
+      await FileSystem.writeAsStringAsync(
+        cachePath,
+        Buffer.from(fileBytes).toString("base64"),
+        { encoding: "base64" }
+      );
+    }
+    // Handle external HTTP/HTTPS URLs
+    else if (ad.url.startsWith("http://") || ad.url.startsWith("https://")) {
+      // Download using FileSystem.downloadAsync
+      const downloadResult = await FileSystem.downloadAsync(ad.url, cachePath);
+
+      if (downloadResult.status !== 200) {
+        return {
+          success: false,
+          error: `Download failed with status ${downloadResult.status}`,
+        };
+      }
+    }
+    // Unsupported URL format
+    else {
+      return {
+        success: false,
+        error: "Unsupported URL format. Use gs://, http://, or https://",
+      };
+    }
 
     // Update metadata
     metadata[cacheKey] = {
