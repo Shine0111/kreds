@@ -10,6 +10,7 @@ export async function extractUSSDCodeFromImage(
 ): Promise<string | null> {
   try {
     const result = await TextRecognition.recognize(photoUri);
+    console.log("Text recognition result:", result);
     const codeBlock = result.blocks.find((block) =>
       block.text.replace(/\s/g, "").match(USSD_CODE_PATTERN)
     );
