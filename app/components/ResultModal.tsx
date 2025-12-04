@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     alignItems: "center",
-    width: "90%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 16,
     elevation: 10,
+    minWidth: "90%",
   },
   dialCodeRow: {
     flexDirection: "row",

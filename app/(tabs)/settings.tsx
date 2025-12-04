@@ -317,9 +317,7 @@ export default function SettingsScreen() {
           <Text style={[styles.copyrightText, { color: colors.text }]}>
             {t.common.allRightsReserved}
           </Text>
-          <Text
-            style={[styles.copyrightDetails, { color: colors.textSecondary }]}
-          >
+          <Text style={[styles.copyrightDetails, { color: colors.text }]}>
             {t.common.copyrightDetails}
           </Text>
         </View>
