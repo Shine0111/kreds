@@ -2,6 +2,7 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -32,20 +33,18 @@ export function ResultModal({
 }: ResultModalProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const [isManuallyCopied, setIsManuallyCopied] = useState(false);
 
   const handleCopyCode = async () => {
     if (dialCode) {
       await Clipboard.setStringAsync(dialCode);
+      setIsManuallyCopied(true);
+      setTimeout(() => setIsManuallyCopied(false), 3000);
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      onRequestClose={onClose}
-      style={styles.modalContainer}
-    >
+    <Modal visible={visible} transparent onRequestClose={onClose}>
       <Pressable onPress={onClose} style={styles.modalBackground}>
         <View>
           <View
@@ -73,7 +72,13 @@ export function ResultModal({
                       onPress={handleCopyCode}
                       accessibilityLabel="Copy dial code"
                     >
-                      <Ionicons name="copy-outline" size={24} color="#25292E" />
+                      <Ionicons
+                        name={
+                          isManuallyCopied ? "checkmark-done" : "copy-outline"
+                        }
+                        size={20}
+                        color="#25292E"
+                      />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -98,14 +103,6 @@ export function ResultModal({
                         color={colors.card}
                         style={{ marginRight: 6 }}
                       />
-                      <Text
-                        style={[
-                          styles.actionButtonText,
-                          { color: colors.card },
-                        ]}
-                      >
-                        {t.home.openDialer}
-                      </Text>
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity
@@ -143,17 +140,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end", // Changed from 'center' to 'flex-end'
-  },
-  modalContainer: {
-    // This creates space from the bottom
-    bottom: 0,
     alignItems: "center",
-    width: "100%",
+    paddingBottom: 59, // Added padding to create space from the bottom
   },
   modalModernContent: {
     borderRadius: 24,
-    paddingVertical: 36,
-    paddingHorizontal: 32,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     alignItems: "center",
     width: "90%",
     shadowColor: "#000",
@@ -170,7 +163,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   dialCodeText: {
-    fontSize: 19,
+    fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
     letterSpacing: 1.5,
@@ -183,7 +176,6 @@ const styles = StyleSheet.create({
   copiedText: {
     color: "#4caf50",
     fontWeight: "600",
-    marginBottom: 10,
     fontSize: 14,
     textAlign: "center",
   },
@@ -211,7 +203,6 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 8,
     elevation: 2,
-    minWidth: 120,
     justifyContent: "center",
   },
   actionButtonText: {
