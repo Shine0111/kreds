@@ -1,3 +1,5 @@
+// app/(tabs)/about.tsx (or settings.tsx)
+
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
@@ -9,6 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Language } from "../constants/translations";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 // App constants
 const APP_INFO = {
@@ -16,9 +21,6 @@ const APP_INFO = {
   version: "1.0.5",
   developer: "Shine Randriamialison",
   email: "ranshine9@gmail.com",
-  copyright: "© 2025 Shine Randriamialison. Tous droits réservés.",
-  copyrightDetails:
-    "La reproduction, la distribution ou la modification non autorisée de cette application ou de l'un de ses contenus est strictement interdite.",
 };
 
 interface SettingsItemProps {
@@ -36,6 +38,8 @@ function SettingsItem({
   onPress,
   children,
 }: SettingsItemProps) {
+  const { colors } = useTheme();
+
   const iconName = isExpanded
     ? (icon.replace("-outline", "-sharp") as keyof typeof Ionicons.glyphMap)
     : icon;
@@ -51,20 +55,31 @@ function SettingsItem({
         accessibilityState={{ expanded: isExpanded }}
       >
         <View style={styles.settingsItemLeft}>
-          <Ionicons name={iconName} size={24} color="#25292E" />
-          <Text style={styles.settingsItemText}>{title}</Text>
+          <Ionicons name={iconName} size={24} color={colors.text} />
+          <Text style={[styles.settingsItemText, { color: colors.text }]}>
+            {title}
+          </Text>
         </View>
-        <Ionicons name={chevronIcon} size={20} color="#888" />
+        <Ionicons name={chevronIcon} size={20} color={colors.textTertiary} />
       </TouchableOpacity>
 
       {isExpanded && children && (
-        <View style={styles.expandedContent}>{children}</View>
+        <View
+          style={[
+            styles.expandedContent,
+            { backgroundColor: colors.expandedContent },
+          ]}
+        >
+          {children}
+        </View>
       )}
     </View>
   );
 }
 
 export default function SettingsScreen() {
+  const { theme, colors, setTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
   const toggleItem = (itemName: string) => {
@@ -80,21 +95,84 @@ export default function SettingsScreen() {
         await Linking.openURL(url);
       } else {
         Alert.alert(
-          "Error",
-          "Cannot open email client. Please contact us at: " + APP_INFO.email
+          t.errors.emailFailed,
+          t.errors.cannotOpenEmail + " " + APP_INFO.email
         );
       }
     } catch (error) {
       console.error("Error opening email:", error);
-      Alert.alert(
-        "Error",
-        "Failed to open email client. Please try again later."
-      );
+      Alert.alert(t.errors.emailFailed, t.errors.emailFailedMessage);
     }
   };
 
+  const renderThemeOption = (themeMode: "light" | "dark", label: string) => {
+    const isSelected = theme === themeMode;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.optionButton,
+          {
+            backgroundColor: isSelected ? colors.primary : colors.optionButton,
+            borderColor: colors.optionButtonBorder,
+          },
+        ]}
+        onPress={() => setTheme(themeMode)}
+      >
+        <Text
+          style={[
+            styles.optionButtonText,
+            { color: isSelected ? "#25292E" : colors.text },
+          ]}
+        >
+          {label}
+        </Text>
+        {isSelected && (
+          <Ionicons
+            name="checkmark-circle"
+            size={20}
+            color="#25292E"
+            style={styles.checkIcon}
+          />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderLanguageOption = (lang: Language, label: string) => {
+    const isSelected = language === lang;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.optionButton,
+          {
+            backgroundColor: isSelected ? colors.primary : colors.optionButton,
+            borderColor: colors.optionButtonBorder,
+          },
+        ]}
+        onPress={() => setLanguage(lang)}
+      >
+        <Text
+          style={[
+            styles.optionButtonText,
+            { color: isSelected ? "#25292E" : colors.text },
+          ]}
+        >
+          {label}
+        </Text>
+        {isSelected && (
+          <Ionicons
+            name="checkmark-circle"
+            size={20}
+            color="#25292E"
+            style={styles.checkIcon}
+          />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -102,87 +180,147 @@ export default function SettingsScreen() {
       >
         {/* App Header */}
         <View style={styles.header}>
-          <Text style={styles.appName}>{APP_INFO.name}</Text>
-          <Text style={styles.headerSubtitle}>Settings</Text>
+          <Text style={[styles.appName, { color: colors.primary }]}>
+            {APP_INFO.name}
+          </Text>
+          <Text style={[styles.headerSubtitle, { color: colors.text }]}>
+            {t.settings.title}
+          </Text>
         </View>
 
         {/* Settings Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          {/* Theme */}
           <SettingsItem
             icon="color-palette-outline"
-            title="Theme"
+            title={t.settings.theme.title}
             isExpanded={expandedItem === "theme"}
             onPress={() => toggleItem("theme")}
           >
-            <Text style={styles.contentText}>
-              Choose your preferred theme for the app.
+            <Text style={[styles.contentText, { color: colors.textSecondary }]}>
+              {t.settings.theme.description}
             </Text>
-            <TouchableOpacity style={styles.optionButton}>
-              <Text style={styles.optionButtonText}>Light Mode</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton}>
-              <Text style={styles.optionButtonText}>Dark Mode</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton}>
-              <Text style={styles.optionButtonText}>System Default</Text>
-            </TouchableOpacity>
+            {renderThemeOption("light", t.settings.theme.light)}
+            {renderThemeOption("dark", t.settings.theme.dark)}
           </SettingsItem>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
+          {/* Language */}
+          <SettingsItem
+            icon="language-outline"
+            title={t.settings.language.title}
+            isExpanded={expandedItem === "language"}
+            onPress={() => toggleItem("language")}
+          >
+            <Text style={[styles.contentText, { color: colors.textSecondary }]}>
+              {t.settings.language.description}
+            </Text>
+            {renderLanguageOption("mg", t.settings.language.malagasy)}
+            {renderLanguageOption("en", t.settings.language.english)}
+            {renderLanguageOption("fr", t.settings.language.french)}
+          </SettingsItem>
+
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+
+          {/* Extra Features */}
           <SettingsItem
             icon="sparkles-outline"
-            title="Extra Features"
+            title={t.settings.features.title}
             isExpanded={expandedItem === "features"}
             onPress={() => toggleItem("features")}
           >
-            <Text style={styles.contentText}>
-              Unlock additional features and functionality.
+            <Text style={[styles.contentText, { color: colors.textSecondary }]}>
+              {t.settings.features.description}
             </Text>
-            <TouchableOpacity style={styles.optionButton}>
-              <Text style={styles.optionButtonText}>Auto-detect operator</Text>
+            <TouchableOpacity
+              style={[
+                styles.optionButton,
+                {
+                  backgroundColor: colors.optionButton,
+                  borderColor: colors.optionButtonBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.optionButtonText, { color: colors.text }]}>
+                {t.settings.features.autoDetect}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton}>
-              <Text style={styles.optionButtonText}>Save scan history</Text>
+            <TouchableOpacity
+              style={[
+                styles.optionButton,
+                {
+                  backgroundColor: colors.optionButton,
+                  borderColor: colors.optionButtonBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.optionButtonText, { color: colors.text }]}>
+                {t.settings.features.saveHistory}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton}>
-              <Text style={styles.optionButtonText}>
-                Quick access shortcuts
+            <TouchableOpacity
+              style={[
+                styles.optionButton,
+                {
+                  backgroundColor: colors.optionButton,
+                  borderColor: colors.optionButtonBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.optionButtonText, { color: colors.text }]}>
+                {t.settings.features.quickAccess}
               </Text>
             </TouchableOpacity>
           </SettingsItem>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
+          {/* Contact Us */}
           <SettingsItem
             icon="mail-outline"
-            title="Contact Us"
+            title={t.settings.contact.title}
             isExpanded={expandedItem === "contact"}
             onPress={() => toggleItem("contact")}
           >
-            <Text style={styles.contentText}>
-              Get in touch with us for support or feedback.
+            <Text style={[styles.contentText, { color: colors.textSecondary }]}>
+              {t.settings.contact.description}
             </Text>
             <TouchableOpacity
-              style={styles.contactButton}
+              style={[
+                styles.contactButton,
+                { backgroundColor: colors.primary },
+              ]}
               onPress={handleContactPress}
             >
               <Ionicons name="mail" size={20} color="#25292E" />
               <Text style={styles.contactButtonText}>{APP_INFO.email}</Text>
             </TouchableOpacity>
             <View style={styles.developerInfo}>
-              <Text style={styles.developerLabel}>Developed by</Text>
-              <Text style={styles.developerName}>{APP_INFO.developer}</Text>
+              <Text
+                style={[styles.developerLabel, { color: colors.textTertiary }]}
+              >
+                {t.settings.contact.developedBy}
+              </Text>
+              <Text style={[styles.developerName, { color: colors.text }]}>
+                {APP_INFO.developer}
+              </Text>
             </View>
           </SettingsItem>
         </View>
 
         {/* Version & Copyright */}
         <View style={styles.footerInfo}>
-          <Text style={styles.versionText}>Version {APP_INFO.version}</Text>
-          <Text style={styles.copyrightText}>{APP_INFO.copyright}</Text>
-          <Text style={styles.copyrightDetails}>
-            {APP_INFO.copyrightDetails}
+          <Text style={[styles.versionText, { color: colors.text }]}>
+            {t.common.version} {APP_INFO.version}
+          </Text>
+          <Text style={[styles.copyrightText, { color: colors.text }]}>
+            {t.common.allRightsReserved}
+          </Text>
+          <Text
+            style={[styles.copyrightDetails, { color: colors.textSecondary }]}
+          >
+            {t.common.copyrightDetails}
           </Text>
         </View>
       </ScrollView>
@@ -193,7 +331,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#25292E",
   },
   scrollView: {
     flex: 1,
@@ -210,17 +347,14 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 36,
     fontWeight: "bold",
-    color: "#ffd33d",
     letterSpacing: 2,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: "#fff",
     opacity: 0.8,
   },
   card: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 8,
     width: "100%",
@@ -245,10 +379,8 @@ const styles = StyleSheet.create({
   settingsItemText: {
     fontSize: 17,
     fontWeight: "500",
-    color: "#25292E",
   },
   expandedContent: {
-    backgroundColor: "#f8f8f8",
     paddingHorizontal: 16,
     paddingVertical: 16,
     marginHorizontal: 8,
@@ -257,26 +389,27 @@ const styles = StyleSheet.create({
   },
   contentText: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 16,
     lineHeight: 20,
   },
   optionButton: {
-    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
   },
   optionButtonText: {
     fontSize: 15,
-    color: "#25292E",
     fontWeight: "500",
   },
+  checkIcon: {
+    marginLeft: 8,
+  },
   contactButton: {
-    backgroundColor: "#ffd33d",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -297,17 +430,14 @@ const styles = StyleSheet.create({
   },
   developerLabel: {
     fontSize: 12,
-    color: "#888",
     marginBottom: 4,
   },
   developerName: {
     fontSize: 15,
-    color: "#25292E",
     fontWeight: "600",
   },
   divider: {
     height: 1,
-    backgroundColor: "#eee",
     marginHorizontal: 16,
   },
   footerInfo: {
@@ -317,20 +447,17 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 14,
-    color: "#fff",
     opacity: 0.7,
     marginBottom: 16,
   },
   copyrightText: {
     fontSize: 12,
-    color: "#fff",
     opacity: 0.6,
     textAlign: "center",
     marginBottom: 8,
   },
   copyrightDetails: {
     fontSize: 11,
-    color: "#fff",
     opacity: 0.5,
     textAlign: "center",
     lineHeight: 16,

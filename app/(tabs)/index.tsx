@@ -7,11 +7,15 @@ import { CameraPermissionView } from "../components/CameraPermissionView";
 import { CameraViewComponent } from "../components/CameraView";
 import { OperatorButtons } from "../components/OperatorButtons";
 import { ResultModal } from "../components/ResultModal";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { extractUSSDCodeFromImage } from "../utils/codeRecognition";
 import { OperatorType, processUSSDCode } from "../utils/operatorConfig";
 import { dialUSSD, requestCallPermission } from "../utils/ussdService";
 
 export default function Index() {
+  const { colors } = useTheme();
+  const { t } = useLanguage();
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -81,7 +85,10 @@ export default function Index() {
           setDialCode(result.dialCode);
           setIsCopied(true);
         } else {
-          Alert.alert("Error", result.message || "Failed to process code");
+          Alert.alert(
+            t.common.error,
+            result.message || "Failed to process code"
+          );
         }
       } else {
         setModalVisible(false);
@@ -99,7 +106,7 @@ export default function Index() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <CameraViewComponent
         cameraRef={cameraRef}
         facing={facing}
@@ -128,7 +135,6 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#25292E",
     justifyContent: "space-between",
     alignItems: "center",
   },

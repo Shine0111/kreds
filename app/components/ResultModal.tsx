@@ -1,14 +1,17 @@
+// app/components/ResultModal.tsx
+
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-import * as Linking from "expo-linking";
-import React from "react";
 import {
   Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface ResultModalProps {
   visible: boolean;
@@ -27,6 +30,9 @@ export function ResultModal({
   onClose,
   onOpenDialer,
 }: ResultModalProps) {
+  const { colors } = useTheme();
+  const { t } = useLanguage();
+
   const handleCopyCode = async () => {
     if (dialCode) {
       await Clipboard.setStringAsync(dialCode);
@@ -34,74 +40,100 @@ export function ResultModal({
   };
 
   return (
-    <Modal visible={visible} transparent onRequestClose={onClose}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalModernContent}>
-          {isProcessing ? (
-            <Text style={[styles.text, styles.processingText]}>
-              Processing...
-            </Text>
-          ) : (
-            <>
-              <View style={styles.dialCodeRow}>
-                <Text style={styles.dialCodeText}>{dialCode}</Text>
-                {dialCode && (
-                  <TouchableOpacity
-                    style={styles.copyButton}
-                    onPress={handleCopyCode}
-                    accessibilityLabel="Copy dial code"
-                  >
-                    <Ionicons name="copy-outline" size={24} color="#25292E" />
-                  </TouchableOpacity>
+    <Modal
+      visible={visible}
+      transparent
+      onRequestClose={onClose}
+      style={styles.modalContainer}
+    >
+      <Pressable onPress={onClose} style={styles.modalBackground}>
+        <View>
+          <View
+            style={[
+              styles.modalModernContent,
+              { backgroundColor: colors.card },
+            ]}
+          >
+            {isProcessing ? (
+              <Text style={[styles.processingText, { color: colors.text }]}>
+                {t.common.processing}
+              </Text>
+            ) : (
+              <>
+                <View style={styles.dialCodeRow}>
+                  <Text style={[styles.dialCodeText, { color: colors.text }]}>
+                    {dialCode}
+                  </Text>
+                  {dialCode && (
+                    <TouchableOpacity
+                      style={[
+                        styles.copyButton,
+                        { backgroundColor: colors.primary },
+                      ]}
+                      onPress={handleCopyCode}
+                      accessibilityLabel="Copy dial code"
+                    >
+                      <Ionicons name="copy-outline" size={24} color="#25292E" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                {isCopied && (
+                  <Text style={dialCode ? styles.copiedText : styles.textError}>
+                    {!dialCode ? t.home.noCodeFound : t.home.dialCodeCopied}
+                  </Text>
                 )}
-              </View>
-              {isCopied && (
-                <Text
-                  style={dialCode ? styles.copiedText : styles.textError}
-                >
-                  {!dialCode
-                    ? "No code was found"
-                    : "Dial code copied to clipboard!"}
-                </Text>
-              )}
-              <View style={styles.modalButtonRow}>
-                {dialCode && (
+                <View style={styles.modalButtonRow}>
+                  {dialCode && (
+                    <TouchableOpacity
+                      style={[
+                        styles.actionButton,
+                        { backgroundColor: colors.text },
+                      ]}
+                      onPress={onOpenDialer}
+                      accessibilityLabel="Open Dialer"
+                    >
+                      <Ionicons
+                        name="call"
+                        size={20}
+                        color={colors.card}
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text
+                        style={[
+                          styles.actionButtonText,
+                          { color: colors.card },
+                        ]}
+                      >
+                        {t.home.openDialer}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={onOpenDialer}
-                    accessibilityLabel="Open Dialer"
+                    style={[
+                      styles.actionButton,
+                      { backgroundColor: colors.border },
+                    ]}
+                    onPress={onClose}
+                    accessibilityLabel="OK"
                   >
                     <Ionicons
-                      name="call"
+                      name="checkmark"
                       size={20}
-                      color="#fff"
+                      color={colors.text}
                       style={{ marginRight: 6 }}
                     />
-                    <Text style={styles.actionButtonText}>Open Dialer</Text>
+                    <Text
+                      style={[styles.actionButtonText, { color: colors.text }]}
+                    >
+                      {t.common.ok}
+                    </Text>
                   </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: "#eee" }]}
-                  onPress={onClose}
-                  accessibilityLabel="OK"
-                >
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color="#25292E"
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={[styles.actionButtonText, { color: "#25292E" }]}
-                  >
-                    OK
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+                </View>
+              </>
+            )}
+          </View>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 }
@@ -110,23 +142,25 @@ const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
+    justifyContent: "flex-end", // Changed from 'center' to 'flex-end'
+  },
+  modalContainer: {
+    // This creates space from the bottom
+    bottom: 0,
     alignItems: "center",
+    width: "100%",
   },
   modalModernContent: {
-    backgroundColor: "#fff",
     borderRadius: 24,
     paddingVertical: 36,
     paddingHorizontal: 32,
     alignItems: "center",
     width: "90%",
-    marginLeft: "1.5%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 16,
     elevation: 10,
-    position: "relative",
   },
   dialCodeRow: {
     flexDirection: "row",
@@ -138,12 +172,10 @@ const styles = StyleSheet.create({
   dialCodeText: {
     fontSize: 19,
     fontWeight: "bold",
-    color: "#25292E",
     textAlign: "center",
     letterSpacing: 1.5,
   },
   copyButton: {
-    backgroundColor: "#ffd33d",
     borderRadius: 8,
     padding: 8,
     marginLeft: 8,
@@ -172,7 +204,6 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#25292E",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 22,
@@ -184,19 +215,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   actionButtonText: {
-    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
   },
   processingText: {
     fontSize: 16,
-    color: "#25292E",
     fontWeight: "600",
     marginVertical: 24,
     textAlign: "center",
-  },
-  text: {
-    color: "black",
   },
 });
