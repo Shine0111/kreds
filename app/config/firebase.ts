@@ -1,5 +1,6 @@
 // Firebase configuration for your app
 // Replace these values with your Firebase project credentials
+// app/config/firebase.ts
 
 export const firebaseConfig = {
   apiKey: "AIzaSyBQQi6tb5hzWyF-R3unenW7R0xzBKbLRI4",
