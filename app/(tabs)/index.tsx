@@ -84,6 +84,7 @@ export default function Index() {
         if (result.success) {
           setDialCode(result.dialCode);
           setIsCopied(true);
+          setIsFlash(false);
         } else {
           Alert.alert(
             t.common.error,
@@ -92,6 +93,7 @@ export default function Index() {
         }
       } else {
         setModalVisible(false);
+        setIsFlash(false);
         Alert.alert(
           "No Code Found",
           "Could not find a valid 14-digit code in the image."
