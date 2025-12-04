@@ -10,11 +10,13 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { Ad, fetchActiveAd, listenToAd } from "../services/adService";
+import { trackAdImpression } from "../services/analyticsService";
 
 export function AdvertisementSection() {
   const [ad, setAd] = useState<Ad | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [impressionTracked, setImpressionTracked] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -25,8 +27,24 @@ export function AdvertisementSection() {
       setError(ad ? null : "Ad not found");
     });
 
+    // Reset impression tracking when ad changes
+    setImpressionTracked(false);
+
     return () => unsubscribe(); // cleanup listener on unmount
   }, []);
+
+  // Track ad impression when ad is loaded and visible
+  useEffect(() => {
+    if (ad && !impressionTracked) {
+      // Track impression after a short delay to ensure it's actually visible
+      const timer = setTimeout(() => {
+        trackAdImpression(ad.id, "Advertiser Name"); // TODO: Get advertiser name from ad data
+        setImpressionTracked(true);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [ad, impressionTracked]);
 
   const loadAd = async () => {
     try {

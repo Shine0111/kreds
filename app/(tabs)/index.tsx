@@ -9,6 +9,14 @@ import { OperatorButtons } from "../components/OperatorButtons";
 import { ResultModal } from "../components/ResultModal";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
+import {
+  trackAppOpen,
+  trackDialerOpen,
+  trackScanFailure,
+  trackScanStart,
+  trackScanSuccess,
+  trackScreenView,
+} from "../services/analyticsService";
 import { extractUSSDCodeFromImage } from "../utils/codeRecognition";
 import { OperatorType, processUSSDCode } from "../utils/operatorConfig";
 import { dialUSSD, requestCallPermission } from "../utils/ussdService";
@@ -27,8 +35,14 @@ export default function Index() {
   const [callPermissionRequested, setCallPermissionRequested] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
+  // Track app open on mount
+  useEffect(() => {
+    trackAppOpen();
+  }, []);
+
   useFocusEffect(() => {
     setIsFocus(true);
+    trackScreenView("home");
     return () => {
       setIsFocus(false);
     };
@@ -60,6 +74,15 @@ export default function Index() {
 
   const handleOpenDialer = () => {
     setIsFlash(false);
+
+    // Track dialer open - determine operator from dial code
+    let operator: OperatorType = "orange";
+    if (dialCode.includes("#321*")) operator = "yas";
+    else if (dialCode.startsWith("202")) operator = "orange";
+    else if (dialCode.includes("*888*")) operator = "airtel";
+
+    trackDialerOpen(operator, dialCode);
+
     dialUSSD(dialCode);
   };
 
@@ -71,6 +94,9 @@ export default function Index() {
 
   const handleOperatorPress = async (operator: OperatorType) => {
     if (!cameraRef.current) return;
+
+    // Track scan start
+    trackScanStart(operator);
 
     setIsProcessing(true);
     setModalVisible(true);
@@ -85,7 +111,14 @@ export default function Index() {
           setDialCode(result.dialCode);
           setIsCopied(true);
           setIsFlash(false);
+          // Track successful scan
+          trackScanSuccess(operator);
         } else {
+          // Track failure
+          trackScanFailure(
+            operator,
+            result.message || "Failed to process code"
+          );
           Alert.alert(
             t.common.error,
             result.message || "Failed to process code"
@@ -94,6 +127,8 @@ export default function Index() {
       } else {
         setModalVisible(false);
         setIsFlash(false);
+        // Track failure
+        trackScanFailure(operator, "No code found in image");
         Alert.alert(
           "No Code Found",
           "Could not find a valid 14-digit code in the image."
@@ -101,6 +136,11 @@ export default function Index() {
       }
     } catch (error) {
       console.error("Error during capture:", error);
+      // Track failure
+      trackScanFailure(
+        operator,
+        error instanceof Error ? error.message : "Unknown error"
+      );
       Alert.alert("Error", "Failed to capture or process image");
     } finally {
       setIsProcessing(false);

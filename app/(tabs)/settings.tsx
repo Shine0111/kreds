@@ -1,7 +1,7 @@
 // app/(tabs)/about.tsx (or settings.tsx)
 
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Linking,
@@ -14,6 +14,7 @@ import {
 import { Language } from "../constants/translations";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { trackScreenView } from "../services/analyticsService";
 
 // App constants
 const APP_INFO = {
@@ -81,6 +82,11 @@ export default function SettingsScreen() {
   const { theme, colors, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+
+  // Track screen view on mount
+  useEffect(() => {
+    trackScreenView("settings");
+  }, []);
 
   const toggleItem = (itemName: string) => {
     setExpandedItem(expandedItem === itemName ? null : itemName);
