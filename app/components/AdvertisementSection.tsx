@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { Ad, fetchActiveAd, listenToAd } from "../services/adService";
-import { trackAdImpression } from "../services/analyticsService";
+import { trackAdClick, trackAdImpression } from "../services/analyticsService";
 
 export function AdvertisementSection() {
   const [ad, setAd] = useState<Ad | null>(null);
@@ -87,6 +87,7 @@ export function AdvertisementSection() {
   }
 
   const handleAdPress = () => {
+    trackAdClick(ad.id, ad.link || "", "Advertiser Name"); // TODO: Get advertiser name from ad data
     if (ad.link) {
       Linking.openURL(ad.link).catch((err) =>
         console.error("Failed to open URL:", err)
